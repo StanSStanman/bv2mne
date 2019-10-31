@@ -12,5 +12,6 @@ Requirements:
 -------------
 
 Tested so far with mne-python version 0.18 (will be installed on setup)  
+Should change version to MNE 0.19
 
 
