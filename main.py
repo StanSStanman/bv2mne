@@ -2,7 +2,7 @@ from preprocessing import *
 from bv2mne.source import create_source_models #create_forward_models
 # from bv2mne.source_power import compute_singletrial_sourcepower
 
-subjects = ['subject_01']
+subjects = ['subject_02']
 sessions = [1] #range(1, 16)
 
 events = ['action', 'outcome']

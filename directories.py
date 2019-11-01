@@ -21,11 +21,13 @@ db_fs = op.join(database, 'db_freesurfer')
 # mne database subdirectories
 raw_dir = op.join(db_mne, project, '{0}', 'raw', '{1}')
 prep_dir = op.join(db_mne, project, '{0}', 'prep', '{1}')
-hga_dir = op.join(db_mne, project, '{0}', 'hga', '{1}')
+trans_dir = op.join(db_mne, project, '{0}', 'trans')
 src_dir = op.join(db_mne, project, '{0}', 'src')
 bem_dir = op.join(db_mne, project, '{0}', 'bem')
+fwd_dir = op.join(db_mne, project, '{0}', 'fwd')
+hga_dir = op.join(db_mne, project, '{0}', 'hga', '{1}')
 
-def create_sbj_mne_db(subject):
+def create_sbj_db_mne(subject):
     # Create MNE database
     if not op.exists(db_mne):
         os.mkdir(db_mne)

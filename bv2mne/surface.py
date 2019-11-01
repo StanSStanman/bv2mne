@@ -174,4 +174,11 @@ def get_surface_labels(surface, texture, subject='S4', hemi='lh',
 
         labels.append(label)
 
-    return labels
+    # MNE accepts hemispheric labels as a single object that keeps the sum of all single labels
+    labels_sum = []
+    for l in labels:
+        if type(labels_sum) == list:
+            labels_sum = l
+        else: labels_sum += l
+
+    return labels_sum
