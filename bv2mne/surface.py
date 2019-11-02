@@ -58,6 +58,8 @@ def get_surface(fname, subject, hemi, trans=None):
     inuse = np.ones(len(coords), dtype=int)
     remains = len(coords)
 
+    vertno = np.where(inuse == 1)[0]
+
     if hemi == 'lh':
         Id = 101
     elif hemi == 'rh':
@@ -66,7 +68,8 @@ def get_surface(fname, subject, hemi, trans=None):
     # Creating surface dict
     surface = {'rr': coords, 'coord_frame': np.array((FIFF.FIFFV_COORD_MRI), np.int32), 'tris': triangles,
                'ntri': len(triangles), 'use_tris': None, 'np': len(coords), 'inuse': inuse, 'nuse_tris': 0,
-               'nuse': remains, 'subject_his_id': subject, 'type': 'surf', 'id': Id, 'nearest': None, 'dist': None}
+               'nuse': remains, 'vertno': vertno, 'subject_his_id': subject, 'type': 'surf', 'id': Id,
+               'nearest': None, 'dist': None}
 
     surface = mne.surface.complete_surface_info(surface)
 
