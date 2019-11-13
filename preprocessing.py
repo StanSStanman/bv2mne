@@ -102,6 +102,8 @@ def trials_autoreject(subject, session, event, save=False):
     if save == True:
         ar_epochs.save(op.join(prep_dir.format(subject, session), '{0}_{1}-epo.fif'.format(subject, event)))
 
+    # BUG TO SOLVE: for different events there could be differents artifact rejection, so it would be nice
+    #               if they're saved in different .npz files (see case of sub_2 sess_4 outcome)
     bad_trials = list(i for i in range(len(ar_epochs.drop_log)) if ar_epochs.drop_log[i])
     # d = np.load(op.join(prep_dir.format(subject, session), 'artifact_rejection.npz'), allow_pickle=True)
     # ar = d['ar'].item()

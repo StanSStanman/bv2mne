@@ -90,18 +90,18 @@ def create_source_models(subject, database=database, save=False):
     # print('\n------------ Subcortical soures----------\n')
     vol_src, vol_labels = get_brain_vol_sources(subject, fname_vol, name_lobe_vol, fname_trans_out, fname_atlas, space=5)
     #
-    if save == True:
-        print('Saving surface source space and labels.....')
-        mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_surf-src.fif'), surf_src, overwrite=True)
-        for sl in surf_labels:
-            mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'), sl)
-        print('[done]')
-
-        print('Saving volume source space and labels.....')
-        mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_vol-src.fif'), vol_src, overwrite=True)
-        for vl in vol_labels:
-            mne.write_label(op.join(src_dir.format(subject), '{0}_vol-lab'), vl)
-        print('[done]')
+    # if save == True:
+    #     print('Saving surface source space and labels.....')
+    #     mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
+    #     for sl in surf_labels:
+    #         mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'.format(subject)), sl)
+    #     print('[done]')
+    #
+    #     print('Saving volume source space and labels.....')
+    #     mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_vol-src.fif'.format(subject), vol_src, overwrite=True))
+    #     for vl in vol_labels:
+    #         mne.write_label(op.join(src_dir.format(subject), '{0}_vol-lab'.format(subject)), vl)
+    #     print('[done]')
     #
     print('\n------------ Sources Completed ----------\n')
 
@@ -164,6 +164,15 @@ def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
             bad_areas = [0, 42]
             if bad_areas is not None:
                 labels_hemi = list(np.delete(labels_hemi, bad_areas, axis=0))
+
+            # MNE accepts hemispheric labels as a single object that keeps the sum of all single labels
+            # That normlly should be really helpful... but maybe in this case is better to keep them separate.
+            # labels_sum = []
+            # for l in labels_hemi:
+            #     if type(labels_sum) == list:
+            #         labels_sum = l
+            #     else:
+            #         labels_sum += l
 
 
             surfaces.append(surface)
@@ -275,9 +284,8 @@ def create_forward_models(subject, srcs, session, event):
 
     # Forward model for cortical sources
     # (fix the source orientation normal to cortical surface)
-    fwd_cortex_gen = forward_model(
-        subject, epochs_event, fname_trans, srcs[0],
-        force_fixed=True, name='singleshell-cortex')
+    fwd_cortex_gen = forward_model(subject, epochs_event, fname_trans, srcs,
+                                   force_fixed=True, name='singleshell-cortex')
 
     # print('\n-------- Forward Model for subcortical soures------------\n')
     # # Forward model for subcortical sources (no fixed orientation)
@@ -288,7 +296,7 @@ def create_forward_models(subject, srcs, session, event):
     # print('\n--------- Forward Models Completed ----------------------\n')
     #
     # return [fwd_cortex_gen, fwd_subcort_gen]
-    return [fwd_cortex_gen]
+    return fwd_cortex_gen
 
 
 def forward_model(subject, raw, fname_trans, src,

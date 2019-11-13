@@ -1,5 +1,5 @@
 from preprocessing import *
-from bv2mne.source import create_source_models #create_forward_models
+from bv2mne.source import create_source_models, create_forward_models
 # from bv2mne.source_power import compute_singletrial_sourcepower
 
 subjects = ['subject_02']
@@ -22,12 +22,12 @@ baseline = ['action', (-1.3, -0.8)]
 
 # Source estimate pipeline
 # ----------------------------------------------------------------------------------------------------------------------
-srcs, surfaces, volumes = create_source_models(subjects[0], save=True)
+surf_src, surf_labels, vol_src, vol_labels = create_source_models(subjects[0], save=True)
 # ----------------------------------------------------------------------------------------------------------------------
 
 # HGA estimation pipeline
 # ----------------------------------------------------------------------------------------------------------------------
-# fwds = create_forward_models(subjects[0], srcs, '1', 'action')
+fwds = create_forward_models(subjects[0], src, '1', 'action')
 # stsp = compute_singletrial_sourcepower('subject_01', 1, 'action')
 print('ciao')
 # ----------------------------------------------------------------------------------------------------------------------
