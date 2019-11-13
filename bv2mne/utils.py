@@ -9,6 +9,7 @@ from numpy.linalg import inv
 from nibabel.affines import apply_affine
 
 from mne.transforms import write_trans, read_trans
+from vispy.visuals.transforms import MatrixTransform
 
 from directories import *
 
@@ -102,6 +103,24 @@ def compute_trans(pos, trans):
             trans = np.array(trans).astype(np.float)
 
     pos = apply_affine(trans, pos)
+    return pos
+
+def tranform(pos, trans):
+    pos = pos.copy()
+    if isinstance(trans, str):
+        if trans.endswith('fif'):
+            trans = mne.read_trans(trans)
+            trans = trans['trans']
+        else:
+            with open(trans, 'r') as matfile:
+                lines = matfile.read().strip().split("\n")
+                trans = [l.split() for l in lines]
+                trans = np.array(trans).astype(np.float)
+    # elif isinstance(trans, np.array):
+    #     trans = trans
+
+    mt = MatrixTransform(trans)
+    pos = mt.map(pos)[:, 0:-1]
     return pos
 
 

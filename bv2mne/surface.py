@@ -14,7 +14,7 @@ from mne.io.constants import FIFF
 from nibabel import gifti
 
 from scipy.stats import rankdata
-from bv2mne.utils import  compute_trans, read_texture_info
+from bv2mne.utils import  compute_trans, read_texture_info, tranform
 
 
 def get_surface(fname, subject, hemi, trans=None):
@@ -50,7 +50,8 @@ def get_surface(fname, subject, hemi, trans=None):
             raise Exception('surface file must be in FreeSurfer or BrainVisa format')
 
     # Apply trans to coords
-    coords = compute_trans(coords, trans) ######################
+    # coords = compute_trans(coords, trans) ######################
+    coords = tranform(coords, trans)
 
     # Locations in meters
     coords = coords * 1e-3
@@ -163,6 +164,7 @@ def get_surface_labels(surface, texture, subject='S4', hemi='lh',
 
         # Textures (values)
         values_parcel = values[ind[ind_n]]
+        # values_parcel = ind                 ############check#############
 
         # Locations in meters
         # rr_parcel = rr_parcel * 1e-3

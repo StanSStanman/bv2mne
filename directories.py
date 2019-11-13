@@ -3,7 +3,7 @@ import os.path as op
 import shutil
 
 # MNE database
-database = op.join('/hpc', 'bagamore', 'basanisi.r', 'toy_db')
+database = op.join('D:\\', 'Databases', 'toy_db')
 # Project name
 project = 'meg_causal'
 

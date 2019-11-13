@@ -167,16 +167,18 @@ def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
 
             # MNE accepts hemispheric labels as a single object that keeps the sum of all single labels
             # That normlly should be really helpful... but maybe in this case is better to keep them separate.
-            # labels_sum = []
-            # for l in labels_hemi:
-            #     if type(labels_sum) == list:
-            #         labels_sum = l
-            #     else:
-            #         labels_sum += l
+            labels_sum = []
+            for l in labels_hemi:
+                if type(labels_sum) == list:
+                    labels_sum = l
+                else:
+                    labels_sum += l
 
 
             surfaces.append(surface)
-            surf_labels.append(labels_hemi)
+            # surf_labels.append(labels_hemi)
+            surf_labels.append(labels_sum)
+
 
     print('Set sources on MarsAtlas cortical areas')
     surf_src = SourceSpaces(surfaces)
