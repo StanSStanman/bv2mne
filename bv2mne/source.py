@@ -163,7 +163,9 @@ def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
             # Delete WM (values of texture 0 and 42)
             bad_areas = [0, 42]
             if bad_areas is not None:
+                # bad =
                 labels_hemi = list(np.delete(labels_hemi, bad_areas, axis=0))
+
 
             # MNE accepts hemispheric labels as a single object that keeps the sum of all single labels
             # That normlly should be really helpful... but maybe in this case is better to keep them separate.

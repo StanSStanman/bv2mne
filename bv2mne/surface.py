@@ -171,7 +171,8 @@ def get_surface_labels(surface, texture, subject='S4', hemi='lh',
 
         # Number of nodes
         nodes, tmp = rr_parcel.shape
-        vertex_ind = np.arange(total_nodes, total_nodes + nodes, 1)
+        # vertex_ind = np.arange(total_nodes, total_nodes + nodes, 1)
+        vertex_ind = ind[ind_n]
         total_nodes = total_nodes + nodes  # (was =+???)
 
         label = Label(vertices=vertex_ind, pos=rr_parcel, values=values_parcel, hemi=hemi,
