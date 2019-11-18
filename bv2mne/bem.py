@@ -32,4 +32,3 @@ def check_bem(subject):
     if op.isfile(fname_bem_model) and op.isfile(fname_bem_sol):
         return True
     else: return False
-    
