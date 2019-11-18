@@ -1,6 +1,6 @@
-# Initially was file data.py in original version by Alexandre Fabre
+# Authors: David Meunier <david.meunier@univ-amu.fr>
+#          Ruggero Basanisi <ruggero.basanisi@gmail.com>
 
-# Modified by David Meunier <david.meunier@univ-amu.fr>
 import os
 import mne
 import numpy as np
@@ -116,8 +116,6 @@ def tranform(pos, trans):
                 lines = matfile.read().strip().split("\n")
                 trans = [l.split() for l in lines]
                 trans = np.array(trans).astype(np.float)
-    # elif isinstance(trans, np.array):
-    #     trans = trans
 
     mt = MatrixTransform(trans)
     pos = mt.map(pos)[:, 0:-1]

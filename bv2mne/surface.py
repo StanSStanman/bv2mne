@@ -1,19 +1,13 @@
-#!/usr/bin/env python
+# Authors: David Meunier <david.meunier@univ-amu.fr>
+#          Ruggero Basanisi <ruggero.basanisi@gmail.com>
 
-# Author: Alexandre Fabre <alexandre.fabre22@gmail.com>
-
-# Modified by David Meunier <david.meunier@univ-amu.fr>
-
-# from mayavi import mlab
 import numpy as np
 import mne
 from mne import Label
-from mne.surface import complete_surface_info
 from mne.io.constants import FIFF
 
 from nibabel import gifti
 
-from scipy.stats import rankdata
 from bv2mne.utils import  compute_trans, read_texture_info, tranform
 
 
@@ -116,13 +110,13 @@ def get_surface_labels(surface, texture, subject='S4', hemi='lh',
 
     values = base_values
 
-    # get parcels and count the number of nodes in each parcel (count)
+    # Get parcels and count the number of nodes in each parcel (count)
     parcels, counts = np.unique(values, return_counts=True)
 
-    # get parcels information
+    # Get parcels information
     info = read_texture_info(fname_atlas, hemi)
 
-    # get triangles for whole surface
+    # Get triangles for whole surface
     triangles = surface['tris']
     total_nodes = 0
     for pos, val in enumerate(parcels):

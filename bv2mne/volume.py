@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
-# Author: Alexandre Fabre <alexandre.fabre22@gmail.com>
-# Modified by David Meunier <david.meunier@univ-amu.fr>
+# Authors: David Meunier <david.meunier@univ-amu.fr>
+#          Ruggero Basanisi <ruggero.basanisi@gmail.com>
 
 from directories import *
 
@@ -27,7 +25,7 @@ aseg_labels = ['Left-Accumbens-area',
                'Left-Putamen',
                'Left-Thalamus-Proper',
                'Left-Cerebellum-Cortex',
-               'Brain-Stem',
+               # 'Brain-Stem',
                'Right-Accumbens-area',
                'Right-Amygdala',
                'Right-Caudate',
@@ -45,6 +43,7 @@ marsatlas_labels = ['NAc_lh',
                     'Put_lh',
                     'Thal_lh',
                     'Crb_lh',
+                    # 'BStem',
                     'NAc_rh',
                     'Amyg_rh',
                     'Cd_rh',
@@ -249,9 +248,9 @@ def get_volume_labels(volume):
     return labels
 
 
-def get_volume(subject, pos=5.0, name='singleshell-cortex'):
+def get_volume(subject, pos=5.0):
 
-    fname_bem_model = op.join(bem_dir.format(subject), '{0}-{1}-bem.fif'.format(subject, name))
+    fname_bem_model = op.join(bem_dir.format(subject), '{0}-bem-model.fif'.format(subject))
 
     fname_aseg = op.join(mri_dir.format(subject), 'aseg.mgz')
 
