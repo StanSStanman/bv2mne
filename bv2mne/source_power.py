@@ -3,7 +3,7 @@ from directories import *
 import mne
 import numpy as np
 from bv2mne.utils import apply_artifact_rejection#, load_srcs
-from bv2mne.source import create_forward_models
+from bv2mne.forward import create_forward_models
 # from bv2mne.csd import csd_epochs
 
 def compute_singletrial_sourcepower(sbj, sn, ev):

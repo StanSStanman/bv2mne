@@ -1,5 +1,6 @@
 from preprocessing import *
-from bv2mne.source import create_source_models, create_forward_models
+from bv2mne.source import create_source_models
+from bv2mne.forward import create_forward_models
 from bv2mne.source_power import compute_singletrial_sourcepower
 
 subjects = ['subject_02']
