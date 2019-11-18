@@ -272,3 +272,13 @@ def compute_mean_centroids(vertex_pos, cluster_labels):
     print(centroids.shape)
 
     return centroids
+
+def apply_artifact_rejection(epochs, sbj, sn):
+    d = np.load(op.join(prep_dir.format(sbj, sn), 'artifact_rejection.npz'), allow_pickle=True)
+    ar = d['ar'].item()
+    try:
+        epochs.drop_channels(ar['bad_chans'])
+    except: pass
+    epochs.drop(ar['bad_trials'])
+    epochs.drop_bad()
+    return epochs

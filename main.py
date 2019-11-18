@@ -1,6 +1,6 @@
 from preprocessing import *
 from bv2mne.source import create_source_models, create_forward_models
-# from bv2mne.source_power import compute_singletrial_sourcepower
+from bv2mne.source_power import compute_singletrial_sourcepower
 
 subjects = ['subject_02']
 sessions = [1] #range(1, 16)
@@ -27,7 +27,7 @@ surf_src, surf_labels, vol_src, vol_labels = create_source_models(subjects[0], s
 
 # HGA estimation pipeline
 # ----------------------------------------------------------------------------------------------------------------------
-fwds = create_forward_models(subjects[0], src, '1', 'action')
-# stsp = compute_singletrial_sourcepower('subject_01', 1, 'action')
+# fwds = create_forward_models(subjects[0], src, '1', 'action')
+# stsp = compute_singletrial_sourcepower('subject_02', 1, 'outcome')
 print('ciao')
 # ----------------------------------------------------------------------------------------------------------------------

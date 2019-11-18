@@ -87,24 +87,27 @@ def create_source_models(subject, database=database, save=False):
     surf_src, surf_labels = get_brain_surf_sources(subject, fname_surf_L, fname_surf_R, fname_tex_L, fname_tex_R, None,
                                                   fname_trans_out, fname_atlas, fname_color)
 
-    # print('\n------------ Subcortical soures----------\n')
+    if save == True:
+        print('Saving surface source space and labels.....')
+        mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
+        for sl in surf_labels:
+            mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'.format(subject)), sl)
+        print('[done]')
+
+    print('\n------------ Subcortical soures----------\n')
+    # vol_src = get_volume(subject)
     vol_src, vol_labels = get_brain_vol_sources(subject, fname_vol, name_lobe_vol, fname_trans_out, fname_atlas, space=5)
     #
-    # if save == True:
-    #     print('Saving surface source space and labels.....')
-    #     mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
-    #     for sl in surf_labels:
-    #         mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'.format(subject)), sl)
-    #     print('[done]')
-    #
-    #     print('Saving volume source space and labels.....')
-    #     mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_vol-src.fif'.format(subject), vol_src, overwrite=True))
-    #     for vl in vol_labels:
-    #         mne.write_label(op.join(src_dir.format(subject), '{0}_vol-lab'.format(subject)), vl)
-    #     print('[done]')
+    if save == True:
+        print('Saving volume source space and labels.....')
+        mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_vol-src.fif'.format(subject)), vol_src, overwrite=True)
+        for vl in vol_labels:
+            mne.write_label(op.join(src_dir.format(subject), '{0}_vol-lab'.format(subject)), vl)
+        print('[done]')
     #
     print('\n------------ Sources Completed ----------\n')
 
+    # vol_src, vol_labels = 0, 0
     # return src_surf, src_vol, surfaces, volumes
     return surf_src, surf_labels, vol_src, vol_labels
 
@@ -214,22 +217,31 @@ def get_brain_vol_sources(subject, fname_vol=None, name_lobe_vol='Subcortical',
     print('build volume areas')
 
     assert fname_vol is not None, "error , missing volume file"
-    list_hemi = ['lh', 'rh']
+    # list_hemi = ['lh', 'rh']
 
     # get volume
-    volumes = []
-    vol_labels = []
-    for hemi in list_hemi:
-        cour_volume = get_volume(fname_vol, fname_atlas, name_lobe_vol,
-                                 subject, hemi, reduce_volume=True)
-        cour_labels = get_volume_labels(cour_volume)
-        volumes.append(cour_volume)
-        vol_labels.append(cour_labels)
+    # volumes = []
+    # vol_labels = []
+    # for hemi in list_hemi:
+        # cour_volume = get_volume(fname_vol, fname_atlas, name_lobe_vol,
+        #                          subject, hemi, reduce_volume=True)
+    vol_src = get_volume(subject, pos=5.0)
+    vol_labels = get_volume_labels(vol_src)
+    # volumes.append(cour_volume)
+    # vol_labels.append(cour_labels)
+    #
+    labels_sum = []
+    for l in vol_labels:
+        if type(labels_sum) == list:
+            labels_sum = l
+        else:
+            labels_sum += l
+    vol_labels = [labels_sum.lh, labels_sum.rh]
 
     # compute also sources
     # volumes = create_param_dict(volumes)
     # src_vol = [get_vol_src(volumes[hemi], space=space) for hemi in list_hemi]
-    vol_src = mne.SourceSpaces(volumes)
+    # vol_src = mne.SourceSpaces(volumes)
 
     print('[done]')
 

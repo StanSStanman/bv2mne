@@ -2,7 +2,7 @@ from directories import *
 
 import mne
 import numpy as np
-from bv2mne.utils import apply_artifact_rejection, load_srcs
+from bv2mne.utils import apply_artifact_rejection#, load_srcs
 from bv2mne.source import create_forward_models
 # from bv2mne.csd import csd_epochs
 
@@ -15,7 +15,8 @@ def compute_singletrial_sourcepower(sbj, sn, ev):
 
     t_event = [epochs_ev.tmin, epochs_ev.tmax]
 
-    srcs = load_srcs(sbj)
+    # srcs = load_srcs(sbj)
+    srcs = mne.read_source_spaces(op.join(src_dir.format(sbj), '{0}_surf-src.fif'.format(sbj)))
 
     # Frequency parameters
     fmin = 88
@@ -29,17 +30,21 @@ def compute_singletrial_sourcepower(sbj, sn, ev):
 
     fwds = create_forward_models(sbj, srcs, sn, ev)
 
-    power_event, time_event = get_epochs_dics(epochs_ev, fwds[0], fmin=fmin, fmax=fmax, tmin=t_event[0],
+    power_event, time_event = get_epochs_dics(epochs_ev, fwds, fmin=fmin, fmax=fmax, tmin=t_event[0],
                                               tmax=t_event[1], tstep=tstep, win_lenghts=win_lengths,
                                               mode='multitaper', mt_bandwidth=mt_bandwidth)
+
+    return power_event, time_event
 
 def get_epochs_dics(epochs_event, fwd, fmin=0, fmax=np.inf, tmin=None, tmax=None, tstep=0.005, win_lenghts=0.2,
                     mode='multitaper', mt_bandwidth=None):
 
     if tmin is None:
         tmin = epochs_event.times[0]
+    else: tmin = tmin
     if tmax is None:
         tmax = epochs_event.times[-1] - win_lenghts
+    else: tmax = tmax - win_lenghts
 
     n_tsteps = int(((tmax - tmin) * 1e3) // (tstep * 1e3))
 

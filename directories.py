@@ -22,6 +22,7 @@ db_fs = op.join(database, 'db_freesurfer')
 raw_dir = op.join(db_mne, project, '{0}', 'raw', '{1}')
 prep_dir = op.join(db_mne, project, '{0}', 'prep', '{1}')
 trans_dir = op.join(db_mne, project, '{0}', 'trans')
+mri_dir = op.join(db_mne, project, '{0}', 'mri')
 src_dir = op.join(db_mne, project, '{0}', 'src')
 bem_dir = op.join(db_mne, project, '{0}', 'bem')
 fwd_dir = op.join(db_mne, project, '{0}', 'fwd')
@@ -76,6 +77,8 @@ def create_sbj_db_mne(subject):
     # Copy FreeSurfer MRI
     shutil.copy2(op.join(db_fs, project, subject, 'mri', 'T1.mgz'),
                  op.join(db_mne, project, subject, 'mri', 'T1.mgz'))
+    shutil.copy2(op.join(db_fs, project, subject, 'mri', 'aseg.mgz'),
+                 op.join(db_mne, project, subject, 'mri', 'aseg.mgz'))
 
     # Copy FreeSurfer BEM
     bem_files = os.listdir(op.join(db_fs, project, subject, 'bem'))

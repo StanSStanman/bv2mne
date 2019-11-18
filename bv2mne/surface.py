@@ -50,8 +50,8 @@ def get_surface(fname, subject, hemi, trans=None):
             raise Exception('surface file must be in FreeSurfer or BrainVisa format')
 
     # Apply trans to coords
-    # coords = compute_trans(coords, trans) ######################
-    coords = tranform(coords, trans)
+    coords = compute_trans(coords, trans) ######################
+    # coords = tranform(coords, trans)
 
     # Locations in meters
     coords = coords * 1e-3
@@ -181,3 +181,19 @@ def get_surface_labels(surface, texture, subject='S4', hemi='lh',
         labels.append(label)
 
     return labels
+
+
+def reject_bad_areas(surface, labels, bad):
+
+    # Detect bad areas and the relative vertices
+    bad_labels = []
+    bad_vertex = []
+    for b in bad:
+        for n, l in enumerate(labels):
+            if l.name == b:
+                bad_labels.append(n)
+                bad_vertex.append(l.vertices)
+
+    # Delete bad labels
+    labels = list(np.delete(labels, bad_labels, axis=0))
+
