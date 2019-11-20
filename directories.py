@@ -1,11 +1,10 @@
 import os
 import os.path as op
 import shutil
+from config.config import read_db_coords
 
-# MNE database
-database = op.join('D:\\', 'Databases', 'toy_db')
-# Project name
-project = 'meg_causal'
+# Defining database coordinates
+database, project = read_db_coords()
 
 # Coordinates for raw files
 db_raw = op.join('/', 'envau', 'work', 'bagamore', 'brovelli.a', 'Data', 'Neurophy', 'MEG_CausaL')
