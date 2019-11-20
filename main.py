@@ -1,34 +1,19 @@
-from preprocessing import *
+import os.path as op
+from config.config import setup_db_coords
+setup_db_coords(op.join('D:\\', 'Databases', 'toy_db'), 'meg_causal', overwrite=True)
+
 from bv2mne.source import create_source_models
 from bv2mne.forward import create_forward_models
-from bv2mne.source_power import compute_singletrial_sourcepower
 
 subjects = ['subject_02']
-sessions = [1] #range(1, 16)
 
-events = ['action', 'outcome']
-times = [(-1.1, 2.), (-1.6, 1.6)]
+for sbj in subjects:
+    # Pipeline for the estimation of surfaces/volumes sources and labels
+    # ------------------------------------------------------------------------------------------------------------------
+    surf_src, surf_labels, vol_src, vol_labels = create_source_models(sbj, save=True)
+    # ------------------------------------------------------------------------------------------------------------------
 
-baseline = ['action', (-1.3, -0.8)]
-
-# Preprocessing pipeline
-# ----------------------------------------------------------------------------------------------------------------------
-# get_raw_causal(subjects)
-#
-# meg_preprocessing(subjects, sessions, art_rej=['action', (-1., 1.)], event_epochs=events,
-#                   event_time=times, baseline=baseline)
-#
-# trials_autoreject(subjects, sessions, events, save=False)
-# ----------------------------------------------------------------------------------------------------------------------
-
-# Source estimate pipeline
-# ----------------------------------------------------------------------------------------------------------------------
-surf_src, surf_labels, vol_src, vol_labels = create_source_models(subjects[0], save=True)
-# ----------------------------------------------------------------------------------------------------------------------
-
-# HGA estimation pipeline
-# ----------------------------------------------------------------------------------------------------------------------
-# fwds = create_forward_models(subjects[0], src, '1', 'action')
-# stsp = compute_singletrial_sourcepower('subject_02', 1, 'outcome')
-print('ciao')
-# ----------------------------------------------------------------------------------------------------------------------
+    # Pipeline to estimate surfaces/volumes forward models
+    # ------------------------------------------------------------------------------------------------------------------
+    fwds = create_forward_models(sbj, '1', 'action')
+    # ------------------------------------------------------------------------------------------------------------------
