@@ -1,0 +1,4 @@
+inv D:\Databases\toy_db\db_brainvisa\meg_causal\{0}\t1mri\default_acquisition\registration\RawT1-{0}_default_acquisition_TO_Talairach-MNI.trm
+D:\Databases\toy_db\db_freesurfer\meg_causal\{0}\mri\transforms\{0}_scanner_to_mni.trm
+D:\Databases\toy_db\db_freesurfer\meg_causal\{0}\mri\transforms\orig_{0}_TO_Scanner_Based.trm
+D:\Databases\toy_db\db_freesurfer\meg_causal\{0}\mri\transforms\{0}_orig_TO_meshes.trm
