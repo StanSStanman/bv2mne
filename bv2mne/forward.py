@@ -6,7 +6,7 @@ import mne
 from directories import *
 from bv2mne.bem import check_bem, create_bem
 
-def create_forward_models(subject, session, event, src=None):
+def create_forward_models(subject, session=1, event='', src=None):
 
     # File to align coordinate frames meg2mri computed using mne.analyze
     # (computed with interactive gui)
@@ -14,6 +14,8 @@ def create_forward_models(subject, session, event, src=None):
 
     # MEG Epoched data to recover position of channels
     fname_event = op.join(prep_dir.format(subject, session), '{0}_{1}-epo.fif'.format(subject, event))
+    if event == '':
+        fname_event.replace('_-', '-')
 
     # Take info from epochs, and then free some space
     epochs_event = mne.read_epochs(fname_event)
@@ -32,7 +34,7 @@ def create_forward_models(subject, session, event, src=None):
         if src[0] == mne.source_space.SourceSpaces:
             pass
     elif src is mne.source_space.SourceSpaces: src = [src]
-    else: raise Exception('\nsource space dtype not recognized, use str, list of str, list of SourceSpaces, '
+    else: raise Exception('\nSource space dtype not recognized, use str, list of str, list of SourceSpaces, '
                           'or None to automatic research\n')
 
     # Calculate forward model for each source space
