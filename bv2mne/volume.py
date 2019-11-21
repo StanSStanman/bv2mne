@@ -229,12 +229,12 @@ marsatlas_labels = ['NAc_lh',
 #
 def get_volume_labels(volume):
     labels = []
-    for vol in volume:
+    for val, vol in enumerate(volume):
         vertices = np.sort(vol['vertno'])
 
         pos = vol['rr'][vertices]
 
-        values = np.ones(len(vertices))
+        values = np.full(len(vertices), 200 + val)
 
         if vol['seg_name'].endswith('lh'):
             hemi = 'lh'
