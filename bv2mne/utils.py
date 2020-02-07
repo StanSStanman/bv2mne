@@ -1,7 +1,6 @@
 # Authors: David Meunier <david.meunier@univ-amu.fr>
 #          Ruggero Basanisi <ruggero.basanisi@gmail.com>
 
-import os
 import mne
 import numpy as np
 from numpy.linalg import inv
@@ -11,7 +10,7 @@ from nibabel.affines import apply_affine
 from mne.transforms import write_trans, read_trans
 from vispy.visuals.transforms import MatrixTransform
 
-from directories import *
+from bv2mne.directories import *
 
 
 def create_trans(subject, database, fname, fname_out):
@@ -96,14 +95,16 @@ def compute_trans(pos, trans):
     pos = pos.copy()
     if isinstance(trans, str):
         if trans.endswith('fif'):
-            trans = read_trans(trans)
-        with open(trans, 'r') as matfile:
-            lines = matfile.read().strip().split("\n")
-            trans = [l.split() for l in lines]
-            trans = np.array(trans).astype(np.float)
+            trans = read_trans(trans)['trans']
+        else:
+            with open(trans, 'r') as matfile:
+                lines = matfile.read().strip().split("\n")
+                trans = [l.split() for l in lines]
+                trans = np.array(trans).astype(np.float)
 
     pos = apply_affine(trans, pos)
     return pos
+
 
 def tranform(pos, trans):
     pos = pos.copy()
@@ -270,13 +271,3 @@ def compute_mean_centroids(vertex_pos, cluster_labels):
     print(centroids.shape)
 
     return centroids
-
-def apply_artifact_rejection(epochs, sbj, sn):
-    d = np.load(op.join(prep_dir.format(sbj, sn), 'artifact_rejection.npz'), allow_pickle=True)
-    ar = d['ar'].item()
-    try:
-        epochs.drop_channels(ar['bad_chans'])
-    except: pass
-    epochs.drop(ar['bad_trials'])
-    epochs.drop_bad()
-    return epochs
