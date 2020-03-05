@@ -9,9 +9,32 @@ import os.path as op
 from bv2mne.directories import read_databases, read_directories
 from bv2mne.bem import check_bem, create_bem
 
-def create_forward_models(json_fname, subject, session=1, event='', src=None):
+def create_forward_models(subject, session=1, event='', src=None, json_fname='default'):
+    """ Create the forward model
 
-    database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
+    Parameters:
+    ----------
+    subject : str
+        Name of the subject
+    session : int | str
+         Number of the session
+    event : str
+        Name of the event of the epoch file
+    src : str | None, default None
+        Path of the sources file, if None the 'src.fif' file is automatically searched
+
+    Returns:
+    -------
+        forward models : list
+            List of forward models
+    -------
+    """
+
+    if json_fname == 'default':
+        read_dir = op.join(op.abspath(__package__), 'config')
+        json_fname = op.join(read_dir, 'db_coords.json')
+
+    # database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
     raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
 
     # File to align coordinate frames meg2mri computed using mne.analyze
@@ -57,7 +80,7 @@ def create_forward_models(json_fname, subject, session=1, event='', src=None):
             name = 'vol'
         else: raise ValueError('Unknown Source Space type, it should be \'surf\' or \'vol\'')
 
-        fwd = forward_model(json_fname, subject, info, fname_trans, sp, force_fixed=f_fixed, name=name)
+        fwd = forward_model(subject, info, fname_trans, sp, force_fixed=f_fixed, name=name, json_fname=json_fname)
         fwds.append(fwd)
 
     print('\n---------- Forward Models Completed ----------\n')
@@ -65,8 +88,8 @@ def create_forward_models(json_fname, subject, session=1, event='', src=None):
     return fwds
 
 
-def forward_model(json_fname, subject, info, fname_trans, src, force_fixed=False, name='model'):
-    """construct forward model
+def forward_model(subject, info, fname_trans, src, force_fixed=False, name='model', json_fname='default'):
+    """  Compute forward model
 
     Parameters
     ----------
@@ -87,9 +110,14 @@ def forward_model(json_fname, subject, info, fname_trans, src, force_fixed=False
 
     Returns
     -------
-    fwd : instance of Forward
+    fwd : instance of mne.Forward
+        Forward model
     -------
     """
+
+    if json_fname == 'default':
+        read_dir = op.join(op.abspath(__package__), 'config')
+        json_fname = op.join(read_dir, 'db_coords.json')
 
     raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
 
