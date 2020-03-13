@@ -4,77 +4,77 @@
 import mne
 import numpy as np
 from numpy.linalg import inv
+import os
+import os.path as op
 
 from nibabel.affines import apply_affine
 
 from mne.transforms import write_trans, read_trans
 # from vispy.visuals.transforms import MatrixTransform
 
-from bv2mne.directories import *
+# from bv2mne.directories import *
 
 
-def create_trans(subject, database, fname, fname_out):
+def create_trans(subject, project, db_fs, db_bv, fname_out):
     """
        Get transformations of the surface from a file that containes filename
        matrix transformations
     """
     trans_list = []
 
-    print(fname)
+    trans_name = [op.join(db_fs, project, '{0}/mri/transforms/{0}_orig_TO_meshes.trm'),
+                  'inv ' + op.join(db_fs, project, '{0}/mri/transforms/orig_{0}_TO_Scanner_Based.trm'),
+                  op.join(db_bv, project, '{0}/t1mri/default_acquisition/registration/RawT1-{0}_default_acquisition_TO_Scanner_Based.trm')]
 
-    with open(fname, 'r') as textfile:
-        trans_name = textfile.read().strip().split("\n")
-        print(trans_name)
+    for name in trans_name:
+        split = name.split()
+        inv_bool = ('inv' == split[0])
+        if inv_bool:
+            name = split[1]
+        else:
+            name = split[0]
 
-        for name in trans_name:
-            split = name.split()
-            inv_bool = ('inv' == split[0])
+        print(name)
+        format_name = name.format(subject)
+        print(format_name)
+
+        # if not os.path.exists(format_name):
+        #     print("error, {} is not an existing path, will try to add \
+        #           subject_dir {}".format(format_name, database))
+        #
+        #     format_name = os.path.join(database, format_name)
+        #     print(format_name)
+        #     assert os.path.exists(format_name), "Breaking, even when add \
+        #         subject_dir, file {} do not exists".format(name)
+
+        with open(format_name, 'r') as matfile:
+            lines = matfile.read().strip().split("\n")
+            lines_list = [l.split() for l in lines]
+            translation = lines_list.pop(0)
+
+            # transpose the rotations
+            transpose = list(zip(*lines_list))
+
+            # append translations
+            transpose.append(translation)
+
+            # create the matrix
+            mat_str = np.array(list(zip(*transpose)))
+            mat = mat_str.astype(np.float)
+            mat = np.vstack([mat, [0, 0, 0, 1]])
+
             if inv_bool:
-                name = split[1]
-            else:
-                name = split[0]
+                mat = inv(mat)
 
-            print(name)
-            format_name = name.format(subject)
-            print(format_name)
+            # add line por computing translation
+            trans_list.append(mat)
 
-            if not os.path.exists(format_name):
-                print("error, {} is not an existing path, will try to add \
-                      subject_dir {}".format(format_name, database))
-
-                format_name = os.path.join(database, format_name)
-                print(format_name)
-                assert os.path.exists(format_name), "Breaking, even when add \
-                    subject_dir, file {} do not exists".format(name)
-
-            with open(format_name, 'r') as matfile:
-                lines = matfile.read().strip().split("\n")
-                lines_list = [l.split() for l in lines]
-                translation = lines_list.pop(0)
-
-                # transpose the rotations
-                transpose = list(zip(*lines_list))
-
-                # append translations
-                transpose.append(translation)
-
-                # create the matrix
-                mat_str = np.array(list(zip(*transpose)))
-                mat = mat_str.astype(np.float)
-                mat = np.vstack([mat, [0, 0, 0, 1]])
-
-                if inv_bool:
-                    mat = inv(mat)
-
-                # add line por computing translation
-                trans_list.append(mat)
-
-        trans = None
-        for trans_cour in trans_list:
-            if trans is None:
-                trans = trans_cour
-            else:
-                trans = np.dot(trans, trans_cour)
+    trans = None
+    for trans_cour in trans_list:
+        if trans is None:
+            trans = trans_cour
+        else:
+            trans = np.dot(trans, trans_cour)
 
     if fname_out.endswith('fif'):
         write_trans(fname_out, trans)

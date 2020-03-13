@@ -15,7 +15,7 @@ from bv2mne.utils import create_trans
 from bv2mne.bem import check_bem, create_bem
 
 
-def create_source_models(subject, save=False, json_fname='default'):
+def create_source_models(subject, project, db_fs, db_bv, db_mne, trm_out, save=False):
     """ Create cortical and subcortical source models
 
     Pipeline for:
@@ -46,12 +46,12 @@ def create_source_models(subject, save=False, json_fname='default'):
         Subcortical volumes Labels
     """
 
-    if json_fname == 'default':
-        read_dir = op.join(op.abspath(__package__), 'config')
-        json_fname = op.join(read_dir, 'db_coords.json')
-
-    database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
-    raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
+    # if json_fname == 'default':
+    #     read_dir = op.join(op.abspath(__package__), 'config')
+    #     json_fname = op.join(read_dir, 'db_coords.json')
+    #
+    # database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
+    # raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
 
     ###########################################################################
     # -------------------------------------------------------------------------
@@ -88,11 +88,11 @@ def create_source_models(subject, save=False, json_fname='default'):
     # -------------------------------------------------------------------------
 
     # Referential file list
-    # (4 transformation files to transform BV meshes to FS space)
-    fname_trans_ref = op.join(db_mne, project, 'referential', 'referential.txt')
+    # (3 transformation files to transform BV meshes to FS space)
+    # fname_trans_ref = op.join(db_mne, project, 'referential', 'referential.txt')
 
     # This file contains the transformations for subject_01
-    fname_trans_out = op.join(db_mne, project, subject, 'ref', '{0}-trans.trm'.format(subject))
+    # fname_trans_out = op.join(db_mne, project, subject, 'ref', '{0}-trans.trm'.format(subject))
 
     name_lobe_vol = ['Subcortical']
     # ---------------------------------------------------------------------
@@ -101,12 +101,12 @@ def create_source_models(subject, save=False, json_fname='default'):
     # http://martinos.org/mne/stable/manual/cookbook.html#source-localization
     # Create .trm file transformation from BrainVisa to FreeSurfer needed
     # for brain.py function for surface only
-    create_trans(subject, database, fname_trans_ref, fname_trans_out)
+    create_trans(subject, project, db_fs, db_bv, trm_out)
 
     # Calculate cortical sources and MarsAtlas labels
     print('\n---------- Cortical sources ----------\n')
-    surf_src, surf_labels = get_brain_surf_sources(subject, fname_surf_L, fname_surf_R, fname_tex_L, fname_tex_R, None,
-                                                  fname_trans_out, fname_atlas, fname_color)
+    surf_src, surf_labels = get_brain_surf_sources(subject, fname_surf_L, fname_surf_R, fname_tex_L, fname_tex_R,
+                                                   trm_out, fname_atlas, fname_color)
 
     if save == True:
         print('\nSaving surface source space and labels.....')
@@ -137,8 +137,8 @@ def create_source_models(subject, save=False, json_fname='default'):
 
 
 def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
-                           fname_tex_L=None, fname_tex_R=None, bad_areas=None,
-                           trans=False, fname_atlas=None, fname_color=None):
+                           fname_tex_L=None, fname_tex_R=None, trans=False,
+                           fname_atlas=None, fname_color=None):
     """compute surface sources
     Parameters
     ----------
