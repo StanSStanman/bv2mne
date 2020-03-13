@@ -12,7 +12,7 @@ from bv2mne.bem import check_bem, create_bem
 def create_forward_models(subject, session=1, event='', src=None, json_fname='default'):
     """ Create the forward model
 
-    Parameters:
+    Parameters
     ----------
     subject : str
         Name of the subject
@@ -23,11 +23,10 @@ def create_forward_models(subject, session=1, event='', src=None, json_fname='de
     src : str | None, default None
         Path of the sources file, if None the 'src.fif' file is automatically searched
 
-    Returns:
+    Returns
     -------
         forward models : list
             List of forward models
-    -------
     """
 
     if json_fname == 'default':
@@ -89,7 +88,7 @@ def create_forward_models(subject, session=1, event='', src=None, json_fname='de
 
 
 def forward_model(subject, info, fname_trans, src, force_fixed=False, name='model', json_fname='default'):
-    """  Compute forward model
+    """Compute forward model.
 
     Parameters
     ----------
@@ -112,7 +111,6 @@ def forward_model(subject, info, fname_trans, src, force_fixed=False, name='mode
     -------
     fwd : instance of mne.Forward
         Forward model
-    -------
     """
 
     if json_fname == 'default':
