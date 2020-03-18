@@ -1,6 +1,7 @@
 # Authors: David Meunier <david.meunier@univ-amu.fr>
 #          Ruggero Basanisi <ruggero.basanisi@gmail.com>
 
+import os
 import os.path as op
 import numpy as np
 
@@ -15,7 +16,7 @@ from bv2mne.utils import create_trans
 from bv2mne.bem import check_bem, create_bem
 
 
-def create_source_models(subject, project, db_fs, db_bv, db_mne, trm_out, save=False):
+def create_source_models(subject, project, db_fs, db_bv, db_mne, trans_out, decimated='original', parcels_fname=None, save=False):
     """ Create cortical and subcortical source models
 
     Pipeline for:
@@ -101,15 +102,18 @@ def create_source_models(subject, project, db_fs, db_bv, db_mne, trm_out, save=F
     # http://martinos.org/mne/stable/manual/cookbook.html#source-localization
     # Create .trm file transformation from BrainVisa to FreeSurfer needed
     # for brain.py function for surface only
-    create_trans(subject, project, db_fs, db_bv, trm_out)
+    create_trans(subject, project, db_fs, db_bv, trans_out)
 
     # Calculate cortical sources and MarsAtlas labels
     print('\n---------- Cortical sources ----------\n')
     surf_src, surf_labels = get_brain_surf_sources(subject, fname_surf_L, fname_surf_R, fname_tex_L, fname_tex_R,
-                                                   trm_out, fname_atlas, fname_color)
+                                                   trans_out, fname_atlas, fname_color)
 
     if save == True:
-        print('\nSaving surface source space and labels.....')
+        src_dir = op.join(db_mne, project, subject, 'src')
+        if not op.exists(src_dir):
+            os.mkdir(src_dir)
+        print('\nSaving surface source space and labels in {0}'.format(src_dir))
         mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
         for sl in surf_labels:
             mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'.format(subject)), sl)
@@ -117,7 +121,7 @@ def create_source_models(subject, project, db_fs, db_bv, db_mne, trm_out, save=F
 
     # Create BEM model if needed
     print('\nBEM model is needed for volume source space\n')
-    if not check_bem(json_fname, subject):
+    if not check_bem(subject):
         create_bem(json_fname, subject)
 
     print('\n---------- Subcortical sources ----------\n')
