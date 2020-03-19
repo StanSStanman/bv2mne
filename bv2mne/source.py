@@ -265,3 +265,7 @@ def get_brain_vol_sources(subject, fname_vol=None, json_fname='default', name_lo
     print('[done]')
 
     return vol_src, vol_labels
+
+
+if __name__ == '__main__':
+    create_source_models('subject_01', save=False, json_fname='default')
