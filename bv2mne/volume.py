@@ -248,16 +248,16 @@ def get_volume_labels(volume):
     return labels
 
 
-def get_volume(subject, pos=5.0, json_fname='default'):
+def get_volume(subject, db_fs, bem_out, pos=5.0):
 
-    if json_fname == 'default':
-        read_dir = op.join(op.abspath(__package__), 'config')
-        json_fname = op.join(read_dir, 'db_coords.json')
+    # if json_fname == 'default':
+    #     read_dir = op.join(op.abspath(__package__), 'config')
+    #     json_fname = op.join(read_dir, 'db_coords.json')
+    #
+    # database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
+    # raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
 
-    database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
-    raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
-
-    fname_bem_model = op.join(bem_dir.format(subject), '{0}-bem-model.fif'.format(subject))
+    fname_bem_model = op.join(bem_out, '{0}-bem-model.fif'.format(subject))
 
     fname_aseg = op.join(mri_dir.format(subject), 'aseg.mgz')
 

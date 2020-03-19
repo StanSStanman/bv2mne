@@ -5,9 +5,9 @@ import mne
 
 import os.path as op
 
-from bv2mne.directories import read_directories, read_databases
+# from bv2mne.directories import read_directories, read_databases
 
-def create_bem(json_fname, subject):
+def create_bem(subject, project, db_fs, bem_out):
     """ Create the BEM model from FreeSurfer files
 
     Parameters:
@@ -27,12 +27,12 @@ def create_bem(json_fname, subject):
     print('\n---------- Resolving BEM model and BEM soultion ----------\n')
 
 
-    database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
+    # database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
+    #
+    # raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
 
-    raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
-
-    fname_bem_model = op.join(bem_dir.format(subject), '{0}-bem-model.fif'.format(subject))
-    fname_bem_sol = op.join(bem_dir.format(subject), '{0}-bem-sol.fif'.format(subject))
+    fname_bem_model = op.join(bem_out, '{0}-bem-model.fif'.format(subject))
+    fname_bem_sol = op.join(bem_out, '{0}-bem-sol.fif'.format(subject))
 
     # Make bem model: single-shell model. Depends on anatomy only.
     bem_model = mne.make_bem_model(subject, ico=None, conductivity=[0.3], subjects_dir=op.join(db_fs, project))
@@ -44,7 +44,7 @@ def create_bem(json_fname, subject):
 
     return bem_model, bem_sol
 
-def check_bem(json_fname, subject):
+def check_bem(subject, bem_out):
     """ Check if the BEM model exists
 
     Parameters
@@ -58,16 +58,15 @@ def check_bem(json_fname, subject):
         True if the BEM model exists for the subject, otherwise False
     -------
     """
-    raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
+    # raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
 
     # Check if BEM files exists, return boolean value
     print('\nChecking BEM files\n')
-    fname_bem_model = op.join(bem_dir.format(subject), '{0}-bem-model.fif'.format(subject))
-    fname_bem_sol = op.join(bem_dir.format(subject), '{0}-bem-sol.fif'.format(subject))
+    fname_bem_model = op.join(bem_out, '{0}-bem-model.fif'.format(subject))
+    fname_bem_sol = op.join(bem_out, '{0}-bem-sol.fif'.format(subject))
 
     if op.isfile(fname_bem_model) and op.isfile(fname_bem_sol):
+        print('[done]')
         return True
-    else: return False
-
-if __name__ == '__main__':
-    create_bem('subject_03')
+    else:
+        return False

@@ -8,15 +8,16 @@ import numpy as np
 import mne
 from mne import SourceSpaces
 
-from bv2mne.directories import read_databases, read_directories
+# from bv2mne.directories import read_databases, read_directories
 
+from bv2mne.hipop138 import get_decimated
 from bv2mne.surface import get_surface, get_surface_labels
 from bv2mne.volume import get_volume, get_volume_labels
 from bv2mne.utils import create_trans
 from bv2mne.bem import check_bem, create_bem
 
 
-def create_source_models(subject, project, db_fs, db_bv, db_mne, trans_out, decimated='original', parcels_fname=None, save=False):
+def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src_out=None, decim='orig', save=False):
     """ Create cortical and subcortical source models
 
     Pipeline for:
@@ -58,27 +59,61 @@ def create_source_models(subject, project, db_fs, db_bv, db_mne, trans_out, deci
     # -------------------------------------------------------------------------
     # BrainVISA anatomical data
     # -------------------------------------------------------------------------
+    assert decim in ['orig', '1K', '2K', '3K', '4K'], 'decim should be one of this string: orig, 1K, 2K, 3K, 4K'
+    assert op.exists(trans_out), 'trans_out is not an existing folder'
+    assert op.exists(src_out), 'src_out is not an existing folder'
 
     # BV decimated white meshes (cortical sources)
-    fname_surf_L = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
-                           'mesh', 'surface_analysis', '{0}_Lwhite_remeshed_hiphop.gii'.format(subject))
-
-    fname_surf_R = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
-                           'mesh', 'surface_analysis', '{0}_Rwhite_remeshed_hiphop.gii'.format(subject))
+    # fname_surf_L = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
+    #                        'mesh', 'surface_analysis', '{0}_Lwhite_remeshed_hiphop.gii'.format(subject))
+    #
+    # fname_surf_R = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
+    #                        'mesh', 'surface_analysis', '{0}_Rwhite_remeshed_hiphop.gii'.format(subject))
 
     # BV texture (MarsAtlas labels) for decimated white meshes
     # (cortical sources)
-    fname_tex_L = op.join(db_bv, 'hiphop138-multiscale', 'Decimated', '4K',
-                          'hiphop138_Lwhite_dec_4K_parcels_marsAtlas.gii')
+    if decim == 'orig':
+        # BV decimated white meshes (cortical sources)
+        fname_surf_L = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+                               'segmentation', 'mesh', '{0}_Lwhite.gii'.format(subject))
 
-    fname_tex_R = op.join(db_bv, 'hiphop138-multiscale', 'Decimated', '4K',
-                          'hiphop138_Rwhite_dec_4K_parcels_marsAtlas.gii')
+        fname_surf_R = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+                               'segmentation', 'mesh', '{0}_Rwhite.gii'.format(subject))
+
+        # BV texture (MarsAtlas labels) for decimated white meshes
+        fname_tex_L = op.join(db_bv, project, subject, 't1mr', 'default_acquisition', 'default_analysis',
+                              'segmentation', 'mesh', 'surface_analysis',
+                              '{0}_Lwhite_parcels_marsAtlas.gii'.format(subject))
+
+        fname_tex_R = op.join(db_bv, project, subject, 't1mr', 'default_acquisition', 'default_analysis',
+                              'segmentation', 'mesh', 'surface_analysis',
+                              '{0}_Rwhite_parcels_marsAtlas.gii'.format(subject))
+
+    else:
+        if not op.exists(op.join(db_bv, 'hiphop138-multiscale')):
+            get_decimated(db_bv)
+
+        # BV decimated white meshes (cortical sources)
+        fname_surf_L = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+                               'segmentation', 'mesh', 'surface_analysis',
+                               '{0}_Lwhite_remeshed_hiphop.gii'.format(subject))
+
+        fname_surf_R = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+                               'segmentation', 'mesh', 'surface_analysis',
+                               '{0}_Rwhite_remeshed_hiphop.gii'.format(subject))
+
+        # BV texture (MarsAtlas labels) for decimated white meshes
+        fname_tex_L = op.join(db_bv, 'hiphop138-multiscale', 'Decimated', decim,
+                              'hiphop138_Lwhite_dec_{0}_parcels_marsAtlas.gii'.format(decim))
+
+        fname_tex_R = op.join(db_bv, 'hiphop138-multiscale', 'Decimated', decim,
+                              'hiphop138_Rwhite_dec_{0}_parcels_marsAtlas.gii'.format(decim))
 
     # Labelling xls file
-    fname_atlas = op.join(db_mne, project, 'marsatlas', 'MarsAtlas_BV_2015.xls')
+    # fname_atlas = op.join(db_mne, project, 'marsatlas', 'MarsAtlas_BV_2015.xls')
 
     # Color palette (still used???)
-    fname_color = op.join(db_mne, project, 'marsatlas', 'MarsAtlas.ima')
+    # fname_color = op.join(db_mne, project, 'marsatlas', 'MarsAtlas.ima')
 
     # MarsAtlas volume parcellation
     fname_vol = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
@@ -93,9 +128,13 @@ def create_source_models(subject, project, db_fs, db_bv, db_mne, trans_out, deci
     # fname_trans_ref = op.join(db_mne, project, 'referential', 'referential.txt')
 
     # This file contains the transformations for subject_01
-    # fname_trans_out = op.join(db_mne, project, subject, 'ref', '{0}-trans.trm'.format(subject))
+    if trans_out is None:
+        trans_out = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+                            'segmentation', 'mesh', '{0}-trans.trm'.format(subject))
+    elif type(trans_out) == str:
+        trans_out = op.join(trans_out, '{0}-trans.trm'.format(subject))
 
-    name_lobe_vol = ['Subcortical']
+    # name_lobe_vol = ['Subcortical']
     # ---------------------------------------------------------------------
     # Setting up the source space from BrainVISA results
     # ---------------------------------------------------------------------
@@ -107,26 +146,32 @@ def create_source_models(subject, project, db_fs, db_bv, db_mne, trans_out, deci
     # Calculate cortical sources and MarsAtlas labels
     print('\n---------- Cortical sources ----------\n')
     surf_src, surf_labels = get_brain_surf_sources(subject, fname_surf_L, fname_surf_R, fname_tex_L, fname_tex_R,
-                                                   trans_out, fname_atlas, fname_color)
+                                                   trans_out)
 
     if save == True:
-        src_dir = op.join(db_mne, project, subject, 'src')
-        if not op.exists(src_dir):
-            os.mkdir(src_dir)
-        print('\nSaving surface source space and labels in {0}'.format(src_dir))
-        mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
+        # src_dir = op.join(db_mne, project, subject, 'src')
+        # if not op.exists(src_dir):
+        #     os.mkdir(src_dir)
+        # print('\nSaving surface source space and labels in {0}'.format(src_dir))
+        # mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
+        # for sl in surf_labels:
+        #     mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'.format(subject)), sl)
+        # print('[done]')
+        print('\nSaving surface source space and labels in {0}'.format(src_out))
+        mne.write_source_spaces(op.join(src_out, '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
         for sl in surf_labels:
-            mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'.format(subject)), sl)
+            mne.write_label(op.join(src_out, '{0}_surf-lab'.format(subject)), sl)
         print('[done]')
 
     # Create BEM model if needed
     print('\nBEM model is needed for volume source space\n')
-    if not check_bem(subject):
-        create_bem(json_fname, subject)
+    if not check_bem(subject, bem_out):
+        print('BEM model not found... creating bem model')
+        create_bem(subject, project, db_fs, bem_out)
 
     print('\n---------- Subcortical sources ----------\n')
 
-    vol_src, vol_labels = get_brain_vol_sources(subject, fname_vol, json_fname, name_lobe_vol, fname_trans_out, fname_atlas, space=5.)
+    vol_src, vol_labels = get_brain_vol_sources(subject, db_fs, bem_out, fname_vol, space=5.)
 
     if save == True:
         print('Saving volume source space and labels.....')
@@ -141,8 +186,7 @@ def create_source_models(subject, project, db_fs, db_bv, db_mne, trans_out, deci
 
 
 def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
-                           fname_tex_L=None, fname_tex_R=None, trans=False,
-                           fname_atlas=None, fname_color=None):
+                           fname_tex_L=None, fname_tex_R=None, trans=False):
     """compute surface sources
     Parameters
     ----------
@@ -190,8 +234,7 @@ def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
 
             # Create surface areas
             surface = get_surface(hemi_surf, subject=subject, hemi=hemi, trans=trans)
-            labels_hemi = get_surface_labels(surface, texture=hemi_tex, hemi=hemi, subject=subject,
-                                             fname_atlas=fname_atlas, fname_color=fname_color)
+            labels_hemi = get_surface_labels(surface, texture=hemi_tex, subject=subject, hemi=hemi)
 
             # Delete WM (values of texture 0 and 42)
             bad_areas = [0, 42]
@@ -218,8 +261,7 @@ def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
     return surf_src, surf_labels
 
 
-def get_brain_vol_sources(subject, fname_vol=None, json_fname='default', name_lobe_vol='Subcortical',
-                          trans=False, fname_atlas=None, space=5):
+def get_brain_vol_sources(subject, db_fs, bem_out, fname_vol=None, space=5.0):
     """ Compute volume sources
 
     Parameters
@@ -243,15 +285,15 @@ def get_brain_vol_sources(subject, fname_vol=None, json_fname='default', name_lo
     -------
     """
 
-    if json_fname == 'default':
-        read_dir = op.join(op.abspath(__package__), 'config')
-        json_fname = op.join(read_dir, 'db_coords.json')
+    # if json_fname == 'default':
+    #     read_dir = op.join(op.abspath(__package__), 'config')
+    #     json_fname = op.join(read_dir, 'db_coords.json')
 
     print('build volume areas')
 
-    assert fname_vol is not None, "error , missing volume file"
+    assert fname_vol is not None, "error, missing volume file"
 
-    vol_src = get_volume(subject, pos=5.0, json_fname=json_fname)
+    vol_src = get_volume(subject, pos=space, bem_out=bem_out)
     vol_labels = get_volume_labels(vol_src)
 
     labels_sum = []
@@ -268,4 +310,9 @@ def get_brain_vol_sources(subject, fname_vol=None, json_fname='default', name_lo
 
 
 if __name__ == '__main__':
-    create_source_models('subject_01', save=False, json_fname='default')
+    db_fs = 'D:\\Databases\\toy_db\\db_freesurfer'
+    db_bv = 'D:\\Databases\\toy_db\\db_brainvisa'
+    db_mne = 'D:\\Databases\\toy_db\\db_mne'
+    trans_out = op.join(db_mne, 'meg_causal', 'subject_01', 'ref', '{0}-trans.trm'.format('subject_01'))
+
+    create_source_models('subject_01', 'meg_causal', db_fs, db_bv, db_mne, trans_out, decim='4K', save=False)

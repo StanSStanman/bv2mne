@@ -8,7 +8,7 @@ from mne.io.constants import FIFF
 
 from nibabel import gifti
 
-from bv2mne.utils import  compute_trans, read_texture_info#
+from bv2mne.utils import  compute_trans, read_texture_info
 
 
 def get_surface(fname, subject, hemi, trans=None):
@@ -43,7 +43,7 @@ def get_surface(fname, subject, hemi, trans=None):
             raise Exception('surface file must be in FreeSurfer or BrainVisa format')
 
     # Apply trans to coords
-    coords = compute_trans(coords, trans) ######################
+    coords = compute_trans(coords, trans)
     # coords = tranform(coords, trans)
 
     # Locations in meters
@@ -70,8 +70,7 @@ def get_surface(fname, subject, hemi, trans=None):
     return surface
 
 
-def get_surface_labels(surface, texture, subject='S4', hemi='lh',
-                      fname_atlas=None, fname_color=None):
+def get_surface_labels(surface, texture, subject, hemi):
     """get areas on the surface
 
     Parameters
@@ -113,7 +112,9 @@ def get_surface_labels(surface, texture, subject='S4', hemi='lh',
     parcels, counts = np.unique(values, return_counts=True)
 
     # Get parcels information
-    info = read_texture_info(fname_atlas, hemi)
+    # info = read_texture_info(fname_atlas, hemi)
+    from bv2mne.marsatlas_parcels import ma_parcels
+    info = ma_parcels
 
     # Get triangles for whole surface
     triangles = surface['tris']
