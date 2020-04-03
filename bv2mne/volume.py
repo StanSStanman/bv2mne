@@ -248,7 +248,7 @@ def get_volume_labels(volume):
     return labels
 
 
-def get_volume(subject, db_fs, bem_out, pos=5.0):
+def get_volume(subject, bem_dir, pos=5.0, json_fname='default'):
 
     # if json_fname == 'default':
     #     read_dir = op.join(op.abspath(__package__), 'config')
@@ -257,9 +257,11 @@ def get_volume(subject, db_fs, bem_out, pos=5.0):
     # database, project, db_mne, db_bv, db_fs = read_databases(json_fname)
     # raw_dir, prep_dir, trans_dir, mri_dir, src_dir, bem_dir, fwd_dir, hga_dir = read_directories(json_fname)
 
-    fname_bem_model = op.join(bem_out, '{0}-bem-model.fif'.format(subject))
+    db_fs, _, _ = read_db_coords(json_fname)
 
-    fname_aseg = op.join(mri_dir.format(subject), 'aseg.mgz')
+    fname_bem_model = op.join(bem_dir, '{0}-bem-model.fif'.format(subject))
+
+    fname_aseg = op.join(db_fs, subject, 'mri', 'aseg.mgz')
 
     vol_src_space = []
     for al, ml in zip(aseg_labels, marsatlas_labels):
@@ -268,7 +270,7 @@ def get_volume(subject, db_fs, bem_out, pos=5.0):
                                                   pos=pos,
                                                   bem=fname_bem_model,
                                                   volume_label=al,
-                                                  subjects_dir=op.join(db_mne, project))
+                                                  subjects_dir=op.join(db_fs)) # before referenced to mne database
 
         vol_label[0]['seg_name'] = ml
 

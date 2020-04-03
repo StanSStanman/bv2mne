@@ -15,16 +15,16 @@ from mne.transforms import write_trans, read_trans
 # from bv2mne.directories import *
 
 
-def create_trans(subject, project, db_fs, db_bv, fname_out):
+def create_trans(subject, db_fs, db_bv, fname_out):
     """
        Get transformations of the surface from a file that containes filename
        matrix transformations
     """
     trans_list = []
 
-    trans_name = [op.join(db_fs, project, '{0}/mri/transforms/{0}_orig_TO_meshes.trm'),
-                  'inv ' + op.join(db_fs, project, '{0}/mri/transforms/orig_{0}_TO_Scanner_Based.trm'),
-                  op.join(db_bv, project, '{0}/t1mri/default_acquisition/registration/RawT1-{0}_default_acquisition_TO_Scanner_Based.trm')]
+    trans_name = [op.join(db_fs, '{0}/mri/transforms/{0}_orig_TO_meshes.trm'),
+                  'inv ' + op.join(db_fs, '{0}/mri/transforms/orig_{0}_TO_Scanner_Based.trm'),
+                  op.join(db_bv, '{0}/t1mri/default_acquisition/registration/RawT1-{0}_default_acquisition_TO_Scanner_Based.trm')]
 
     for name in trans_name:
         split = name.split()

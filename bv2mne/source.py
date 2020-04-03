@@ -10,6 +10,8 @@ from mne import SourceSpaces
 
 # from bv2mne.directories import read_databases, read_directories
 
+from bv2mne.config.config import read_db_coords
+from bv2mne.directories import mne_directories
 from bv2mne.hipop138 import get_decimated
 from bv2mne.surface import get_surface, get_surface_labels
 from bv2mne.volume import get_volume, get_volume_labels
@@ -17,7 +19,8 @@ from bv2mne.utils import create_trans
 from bv2mne.bem import check_bem, create_bem
 
 
-def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src_out=None, decim='orig', save=False):
+def create_source_models(subject, bem_dir=None, trans_dir=None, src_dir=None,
+                         json_fname='default', decim='orig', save=False):
     """ Create cortical and subcortical source models
 
     Pipeline for:
@@ -59,9 +62,17 @@ def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src
     # -------------------------------------------------------------------------
     # BrainVISA anatomical data
     # -------------------------------------------------------------------------
+    db_fs, db_bv, db_mne = read_db_coords(json_fname)
+    if db_mne != None:
+        _, _, trans_dir, _, src_dir, bem_dir, _, _ = mne_directories(db_mne)
+        trans_dir = trans_dir.format(subject)
+        src_dir = src_dir.format(subject)
+        bem_dir = bem_dir.format(subject)
+
     assert decim in ['orig', '1K', '2K', '3K', '4K'], 'decim should be one of this string: orig, 1K, 2K, 3K, 4K'
-    assert op.exists(trans_out), 'trans_out is not an existing folder'
-    assert op.exists(src_out), 'src_out is not an existing folder'
+    assert op.exists(bem_dir), 'bem_dir is not an existing folder'
+    assert op.exists(trans_dir), 'trans_dir is not an existing folder'
+    assert op.exists(src_dir), 'src_dir is not an existing folder'
 
     # BV decimated white meshes (cortical sources)
     # fname_surf_L = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
@@ -74,18 +85,18 @@ def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src
     # (cortical sources)
     if decim == 'orig':
         # BV decimated white meshes (cortical sources)
-        fname_surf_L = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+        fname_surf_L = op.join(db_bv, subject, 't1mri', 'default_acquisition', 'default_analysis',
                                'segmentation', 'mesh', '{0}_Lwhite.gii'.format(subject))
 
-        fname_surf_R = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+        fname_surf_R = op.join(db_bv, subject, 't1mri', 'default_acquisition', 'default_analysis',
                                'segmentation', 'mesh', '{0}_Rwhite.gii'.format(subject))
 
         # BV texture (MarsAtlas labels) for decimated white meshes
-        fname_tex_L = op.join(db_bv, project, subject, 't1mr', 'default_acquisition', 'default_analysis',
+        fname_tex_L = op.join(db_bv, subject, 't1mr', 'default_acquisition', 'default_analysis',
                               'segmentation', 'mesh', 'surface_analysis',
                               '{0}_Lwhite_parcels_marsAtlas.gii'.format(subject))
 
-        fname_tex_R = op.join(db_bv, project, subject, 't1mr', 'default_acquisition', 'default_analysis',
+        fname_tex_R = op.join(db_bv, subject, 't1mr', 'default_acquisition', 'default_analysis',
                               'segmentation', 'mesh', 'surface_analysis',
                               '{0}_Rwhite_parcels_marsAtlas.gii'.format(subject))
 
@@ -94,11 +105,11 @@ def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src
             get_decimated(db_bv)
 
         # BV decimated white meshes (cortical sources)
-        fname_surf_L = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+        fname_surf_L = op.join(db_bv, subject, 't1mri', 'default_acquisition', 'default_analysis',
                                'segmentation', 'mesh', 'surface_analysis',
                                '{0}_Lwhite_remeshed_hiphop.gii'.format(subject))
 
-        fname_surf_R = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+        fname_surf_R = op.join(db_bv, subject, 't1mri', 'default_acquisition', 'default_analysis',
                                'segmentation', 'mesh', 'surface_analysis',
                                '{0}_Rwhite_remeshed_hiphop.gii'.format(subject))
 
@@ -116,8 +127,8 @@ def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src
     # fname_color = op.join(db_mne, project, 'marsatlas', 'MarsAtlas.ima')
 
     # MarsAtlas volume parcellation
-    fname_vol = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
-                        'mesh', 'surface_analysis', '{0}_parcellation.nii.gz'.format(subject))
+    # fname_vol = op.join(db_bv, subject, 't1mri', 'default_acquisition', 'default_analysis', 'segmentation',
+    #                     'mesh', 'surface_analysis', '{0}_parcellation.nii.gz'.format(subject))
 
     # -------------------------------------------------------------------------
     # Transformation files BV to FS
@@ -127,12 +138,13 @@ def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src
     # (3 transformation files to transform BV meshes to FS space)
     # fname_trans_ref = op.join(db_mne, project, 'referential', 'referential.txt')
 
-    # This file contains the transformations for subject_01
-    if trans_out is None:
-        trans_out = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
-                            'segmentation', 'mesh', '{0}-trans.trm'.format(subject))
-    elif type(trans_out) == str:
-        trans_out = op.join(trans_out, '{0}-trans.trm'.format(subject))
+    # This file contains the transformations
+    trans_out = op.join(trans_dir, '{0}-trans.trm'.format(subject))
+    # if trans_out is None:
+    #     trans_out = op.join(db_bv, project, subject, 't1mri', 'default_acquisition', 'default_analysis',
+    #                         'segmentation', 'mesh', '{0}-trans.trm'.format(subject))
+    # elif type(trans_out) == str:
+    #     trans_out = op.join(trans_out, '{0}-trans.trm'.format(subject))
 
     # name_lobe_vol = ['Subcortical']
     # ---------------------------------------------------------------------
@@ -141,7 +153,7 @@ def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src
     # http://martinos.org/mne/stable/manual/cookbook.html#source-localization
     # Create .trm file transformation from BrainVisa to FreeSurfer needed
     # for brain.py function for surface only
-    create_trans(subject, project, db_fs, db_bv, trans_out)
+    create_trans(subject, db_fs, db_bv, trans_out)
 
     # Calculate cortical sources and MarsAtlas labels
     print('\n---------- Cortical sources ----------\n')
@@ -157,27 +169,27 @@ def create_source_models(subject, project, db_fs, db_bv, bem_out, trans_out, src
         # for sl in surf_labels:
         #     mne.write_label(op.join(src_dir.format(subject), '{0}_surf-lab'.format(subject)), sl)
         # print('[done]')
-        print('\nSaving surface source space and labels in {0}'.format(src_out))
-        mne.write_source_spaces(op.join(src_out, '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
+        print('\nSaving surface source space and labels in {0}'.format(src_dir))
+        mne.write_source_spaces(op.join(src_dir, '{0}_surf-src.fif'.format(subject)), surf_src, overwrite=True)
         for sl in surf_labels:
-            mne.write_label(op.join(src_out, '{0}_surf-lab'.format(subject)), sl)
+            mne.write_label(op.join(src_dir, '{0}_surf-lab'.format(subject)), sl)
         print('[done]')
 
     # Create BEM model if needed
     print('\nBEM model is needed for volume source space\n')
-    if not check_bem(subject, bem_out):
+    if not check_bem(subject, bem_dir):
         print('BEM model not found... creating bem model')
-        create_bem(subject, project, db_fs, bem_out)
+        create_bem(subject, bem_dir, json_fname)
 
     print('\n---------- Subcortical sources ----------\n')
 
-    vol_src, vol_labels = get_brain_vol_sources(subject, db_fs, bem_out, fname_vol, space=5.)
+    vol_src, vol_labels = get_brain_vol_sources(subject, bem_dir, space=5., json_fname=json_fname)
 
     if save == True:
-        print('Saving volume source space and labels.....')
-        mne.write_source_spaces(op.join(src_dir.format(subject), '{0}_vol-src.fif'.format(subject)), vol_src, overwrite=True)
+        print('Saving volume source space and labels in {0}'.format(src_dir))
+        mne.write_source_spaces(op.join(src_dir, '{0}_vol-src.fif'.format(subject)), vol_src, overwrite=True)
         for vl in vol_labels:
-            mne.write_label(op.join(src_dir.format(subject), '{0}_vol-lab'.format(subject)), vl)
+            mne.write_label(op.join(src_dir, '{0}_vol-lab'.format(subject)), vl)
         print('[done]')
     #
     print('\n---------- Sources Completed ----------\n')
@@ -261,7 +273,7 @@ def get_brain_surf_sources(subject, fname_surf_L=None, fname_surf_R=None,
     return surf_src, surf_labels
 
 
-def get_brain_vol_sources(subject, db_fs, bem_out, fname_vol=None, space=5.0):
+def get_brain_vol_sources(subject, bem_dir, space=5.0, json_fname='default'):
     """ Compute volume sources
 
     Parameters
@@ -291,9 +303,9 @@ def get_brain_vol_sources(subject, db_fs, bem_out, fname_vol=None, space=5.0):
 
     print('build volume areas')
 
-    assert fname_vol is not None, "error, missing volume file"
+    # assert fname_vol is not None, "error, missing volume file"
 
-    vol_src = get_volume(subject, pos=space, bem_out=bem_out)
+    vol_src = get_volume(subject, bem_dir=bem_dir, pos=space, json_fname=json_fname)
     vol_labels = get_volume_labels(vol_src)
 
     labels_sum = []
@@ -310,9 +322,9 @@ def get_brain_vol_sources(subject, db_fs, bem_out, fname_vol=None, space=5.0):
 
 
 if __name__ == '__main__':
-    db_fs = 'D:\\Databases\\toy_db\\db_freesurfer'
-    db_bv = 'D:\\Databases\\toy_db\\db_brainvisa'
-    db_mne = 'D:\\Databases\\toy_db\\db_mne'
-    trans_out = op.join(db_mne, 'meg_causal', 'subject_01', 'ref', '{0}-trans.trm'.format('subject_01'))
+    project = 'meg_causal'
+    db_fs = op.join('D:', 'Databases', 'toy_db', 'db_freesurfer', project)
+    db_bv =op.join('D:', 'Databases', 'toy_db', 'db_brainvisa', project)
+    db_mne = op.join('D:', 'Databases', 'toy_db', 'db_mne', project)
 
     create_source_models('subject_01', 'meg_causal', db_fs, db_bv, db_mne, trans_out, decim='4K', save=False)
