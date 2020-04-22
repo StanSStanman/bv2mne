@@ -67,6 +67,9 @@ def get_surface(fname, subject, hemi, trans=None):
 
     surface = mne.surface.complete_surface_info(surface)
 
+    # Invert normals
+    surface['nn'] = surface['nn'] * -1
+
     return surface
 
 
