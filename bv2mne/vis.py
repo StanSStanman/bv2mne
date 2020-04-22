@@ -173,6 +173,41 @@ def visualize_objects(subject, bem, sources, brain, color='marsatlas', json_fnam
 # se.add_to_subplot(src)
 # se.preview()
 
+# coeff = 1000
+# sources = surface['rr']
+# normals = surface['nn']
+# triangles = surface['tris']
+# sources *= coeff
+# normals *= coeff
+# so = SceneObj()
+# src = SourceObj('src', sources)
+# norm = SourceObj('norm', (normals/100) + sources, color='green')
+# brain = BrainObj('brain', vertices=sources, faces=triangles, normals=normals, translucent=True)
+# vect = VectorObj('vectors', (sources, (normals/500) + sources), color='green', line_width=1., arrow_size=3.)
+# so.add_to_subplot(brain)
+# so.add_to_subplot(vect)
+# so.preview()
+# so.add_to_subplot(src)
+# so.add_to_subplot(norm)
+# so.preview()
+
+def plot_normals(fwd):
+    sources = fwd['source_rr'].copy()
+    normals = fwd['source_nn'].copy()
+    # lh_tris = fwd['src'][0]['tris']
+    # rh_tris = fwd['src'][1]['tris']
+    # tris = np.vstack((lh_tris, rh_tris + 4078))
+    sources *= 1000
+    normals *= 1000
+    # from visbrain.objects import *
+    so = SceneObj()
+    src = SourceObj('src', sources)
+    vect = VectorObj('vectors', (sources, (normals/500) + sources), color='green', line_width=1., arrow_size=3.)
+    so.add_to_subplot(src)
+    so.add_to_subplot(vect)
+    so.preview()
+
+
 if __name__ == '__main__':
     # visualize_cortical_src('subject_02', hemi='both', color='marsatlas', preview=True)
     json_fname = ""
