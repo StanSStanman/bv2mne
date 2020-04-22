@@ -25,13 +25,16 @@ from bv2mne.source import create_source_models
 
 if __name__ == '__main__':
     project = 'meg_causal'
-    db_fs = op.join('D:\\', 'Databases', 'toy_db', 'db_freesurfer', project)
-    db_bv =op.join('D:\\', 'Databases', 'toy_db', 'db_brainvisa', project)
-    db_mne = op.join('D:\\', 'Databases', 'toy_db', 'db_mne', project)
+    # db_fs = op.join('D:\\', 'Databases', 'toy_db', 'db_freesurfer', project)
+    # db_bv =op.join('D:\\', 'Databases', 'toy_db', 'db_brainvisa', project)
+    # db_mne = op.join('D:\\', 'Databases', 'toy_db', 'db_mne', project)
+    db_fs = op.join('G:\\', 'data', 'db_freesurfer', project)
+    db_bv = op.join('G:\\', 'data', 'db_brainvisa', project)
+    db_mne = op.join('G:\\', 'data', 'db_mne', project)
 
     setup_db_coords(db_fs, db_bv, db_mne, json_path='default', overwrite=True)
 
-    subjects = ['subject_01']
+    subjects = ['subject_02']
 
     for sbj in subjects:
         create_source_models(sbj, bem_dir=None, trans_dir=None, src_dir=None,
