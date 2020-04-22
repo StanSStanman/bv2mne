@@ -120,4 +120,4 @@ bv2mne/__pycache__/
 bv2mne/config/__pycache__/
 bv2mne/tests/__pycache__/
 */__pycache__/
-docs
+docs/*
