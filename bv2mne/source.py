@@ -322,9 +322,6 @@ def get_brain_vol_sources(subject, bem_dir, space=5.0, json_fname='default'):
 
 
 if __name__ == '__main__':
-    project = 'meg_causal'
-    db_fs = op.join('D:', 'Databases', 'toy_db', 'db_freesurfer', project)
-    db_bv =op.join('D:', 'Databases', 'toy_db', 'db_brainvisa', project)
-    db_mne = op.join('D:', 'Databases', 'toy_db', 'db_mne', project)
-
-    create_source_models('subject_01', 'meg_causal', db_fs, db_bv, db_mne, trans_out, decim='4K', save=False)
+    subject = 'subject_01'
+    create_source_models(subject, bem_dir=None, trans_dir=None, src_dir=None,
+                         json_fname='default', decim='4K', save=True)
